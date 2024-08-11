@@ -1,0 +1,44 @@
+Sub RandomAuditByClaimID()
+    Dim ws As Worksheet
+    Dim lastRow As Long
+    Dim totalSample As Long
+    Dim i As Long
+    Dim rng As Range
+    Dim claimCol As String
+    Dim randomCol As String
+    Dim rankCol As String
+    Dim sampleCol As String
+    
+    ' Set your worksheet
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Replace "Sheet1" with your actual sheet name
+    
+    ' Define your columns
+    claimCol = "A" ' Replace with the actual column letter of Claim ID
+    randomCol = "B" ' The column to store random numbers
+    rankCol = "C" ' The column to store ranks
+    sampleCol = "D" ' The column to mark samples
+    
+    ' Find the last row with data in Claim ID column
+    lastRow = ws.Cells(ws.Rows.Count, claimCol).End(xlUp).Row
+    
+    ' Calculate 10% of the population (rounded)
+    totalSample = Round((lastRow - 1) * 0.1, 0)
+    
+    ' Add a random number to each row
+    ws.Range(randomCol & "2:" & randomCol & lastRow).Formula = "=RAND()"
+    
+    ' Rank the random numbers
+    ws.Range(rankCol & "2:" & rankCol & lastRow).Formula = "=RANK(" & randomCol & "2," & randomCol & "2:" & randomCol & lastRow & ")"
+    
+    ' Clear any previous sample marks
+    ws.Range(sampleCol & "2:" & sampleCol & lastRow).ClearContents
+    
+    ' Mark the top 10% for audit
+    For i = 2 To lastRow
+        If ws.Cells(i, rankCol).Value <= totalSample Then
+            ws.Cells(i, sampleCol).Value = "Audit"
+        End If
+    Next i
+    
+    MsgBox totalSample & " claims have been selected for audit.", vbInformation
+End Sub
